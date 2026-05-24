@@ -874,12 +874,48 @@
   });
 
   // Form submit
-  function submitForm() {
-    const fname = document.getElementById('fname').value;
-    const phone = document.getElementById('phone').value;
+  async function submitForm() {
+    const fname = document.getElementById('fname').value.trim();
+    const phone = document.getElementById('phone').value.trim();
     if (!fname || !phone) { alert('Please enter your name and phone number so we can contact you.'); return; }
-    document.getElementById('formContent').style.display = 'none';
-    document.getElementById('formSuccess').classList.add('active');
+
+    const btn = document.querySelector('.form-submit');
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+
+    const data = {
+      access_key: 'b7e32bb7-924b-4e89-a685-082f7d9b974c',
+      subject: 'New Quote Request — FenceForce WA',
+      from_name: 'FenceForce WA Website',
+      name: fname + ' ' + (document.getElementById('lname').value || ''),
+      phone: phone,
+      email: document.getElementById('email').value || 'Not provided',
+      suburb: document.getElementById('suburb').value || 'Not provided',
+      fence_type: document.getElementById('fencetype').value || 'Not specified',
+      message: document.getElementById('details').value || 'No details provided',
+      budget: (document.querySelector('.budget-btn.selected') || {}).textContent || 'Not selected',
+    };
+
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const json = await res.json();
+      if (json.success) {
+        document.getElementById('formContent').style.display = 'none';
+        document.getElementById('formSuccess').classList.add('active');
+      } else {
+        btn.textContent = 'Book Free Measure & Quote →';
+        btn.disabled = false;
+        alert('Something went wrong. Please call us on 0451 206 042.');
+      }
+    } catch(e) {
+      btn.textContent = 'Book Free Measure & Quote →';
+      btn.disabled = false;
+      alert('Something went wrong. Please call us on 0451 206 042.');
+    }
   }
 
   // Mobile menu
